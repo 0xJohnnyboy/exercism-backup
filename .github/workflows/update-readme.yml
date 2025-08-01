@@ -32,14 +32,17 @@ jobs:
           echo '|---------|----------|--------|------|--------------|--------|' >> STATS.md
 
           jq -r '
-            .[]
-            | select(.language != "Total")
-            | select(.stats != null)
-            | select(.stats.files != null and .stats.lines != null and .stats.code != null and .stats.comments != null and .stats.blanks != null)
-            | "| \(.language) | \(.stats.files) | \(.stats.lines) | \(.stats.code) | \(.stats.comments) | \(.stats.blanks) |"
+            to_entries[]
+            | select(.key != "Total")
+            | .key as $lang
+            | .value.stats as $s
+            | "| \($lang) | \($s.files) | \($s.lines) | \($s.code) | \($s.comments) | \($s.blanks) |"
           ' stats.json >> STATS.md
 
-          echo "| **Total** | $(jq '[.[].stats.files // 0] | add' stats.json) | $(jq '[.[].stats.lines // 0] | add' stats.json) | $(jq '[.[].stats.code // 0] | add' stats.json) | $(jq '[.[].stats.comments // 0] | add' stats.json) | $(jq '[.[].stats.blanks // 0] | add' stats.json) |" >> STATS.md
+          jq -r '
+            .Total.stats
+            | "| **Total** | \(.files) | \(.lines) | \(.code) | \(.comments) | \(.blanks) |"
+          ' stats.json >> STATS.md
 
       - name: Inject table into README
         run: |
@@ -50,7 +53,7 @@ jobs:
 
       - name: Clean temporary files
         run: |
-          rm -f STATS.md stats.json
+          rm -f STATS.md stats.json tokei*
           
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
