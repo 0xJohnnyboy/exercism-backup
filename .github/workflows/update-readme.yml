@@ -32,22 +32,12 @@ jobs:
           echo '|---------|----------|--------|------|--------------|--------|' >> STATS.md
 
           jq -r '
-            to_entries[]
-            | select(.key != "Total")
-            | .key as $lang
-            | (
-                if (.value.reports? and (.value.reports | type == "array")) then
-                  .value.reports | map(.stats) | map(select(.) ) | 
-                  {files: (map(.files) | add), lines: (map(.lines) | add), code: (map(.code) | add), comments: (map(.comments) | add), blanks: (map(.blanks) | add)}
-                else
-                  .value.stats // {}
-                end
-              ) as $stats
-            | select($stats.files != null)
-            | "| \($lang) | \($stats.files) | \($stats.lines) | \($stats.code) | \($stats.comments) | \($stats.blanks) |"
-          ' stats.json >> STATS.md
+          .[]
+          | select(.language != "Total")
+          | "| \(.language) | \(.stats.files) | \(.stats.lines) | \(.stats.code) | \(.stats.comments) | \(.stats.blanks) |"
+        ' stats.json >> STATS.md
 
-          echo '| **Total** | '$(jq '[.[][] | if type=="object" and has("stats") then .stats else . end | select(.) | .files] | add' stats.json)' | '$(jq '[.[][] | if type=="object" and has("stats") then .stats else . end | select(.) | .lines] | add' stats.json)' | '$(jq '[.[][] | if type=="object" and has("stats") then .stats else . end | select(.) | .code] | add' stats.json)' | '$(jq '[.[][] | if type=="object" and has("stats") then .stats else . end | select(.) | .comments] | add' stats.json)' | '$(jq '[.[][] | if type=="object" and has("stats") then .stats else . end | select(.) | .blanks] | add' stats.json)' |' >> STATS.md
+          echo '| **Total** | '$(jq '[.[].stats.files] | add' stats.json)' | '$(jq '[.[].stats.lines] | add' stats.json)' | '$(jq '[.[].stats.code] | add' stats.json)' | '$(jq '[.[].stats.comments] | add' stats.json)' | '$(jq '[.[].stats.blanks] | add' stats.json)' |' >> STATS.md
 
       - name: Inject table into README
         run: |
