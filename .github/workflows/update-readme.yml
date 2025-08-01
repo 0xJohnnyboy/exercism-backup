@@ -1,0 +1,34 @@
+name: Update README with tokei stats
+
+on:
+  push:
+    paths:
+      - 'solutions/**'
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tokei
+        run: |
+          curl -L https://github.com/XAMPPRocky/tokei/archive/refs/tags/v13.0.0-alpha.9.tar.gz | tar xz
+          sudo mv tokei /usr/local/bin/tokei
+
+      - name: Generate stats
+        run: |
+          echo '## 📊 Stats' > STATS.md
+          echo >> STATS.md
+          tokei solutions/ >> STATS.md
+
+      - name: Update README
+        run: |
+          awk '/<!--STATS_START-->/{print; system("cat STATS.md"); found=1; next} /<!--STATS_END-->/{found=0} !found' README.md > README.tmp
+          mv README.tmp README.md
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(readme): update stats"
