@@ -32,12 +32,12 @@ jobs:
           echo '|---------|----------|--------|------|--------------|--------|' >> STATS.md
 
           jq -r '
-          .[]
-          | select(.language != "Total")
-          | "| \(.language) | \(.stats.files) | \(.stats.lines) | \(.stats.code) | \(.stats.comments) | \(.stats.blanks) |"
+            .[]
+            | select(.language != "Total")
+            | "| \(.language) | \(.stats.files) | \(.stats.lines) | \(.stats.code) | \(.stats.comments) | \(.stats.blanks) |"
           ' stats.json >> STATS.md
 
-          echo '| **Total** | '$(jq '[.[].stats.files] | add' stats.json)' | '$(jq '[.[].stats.lines] | add' stats.json)' | '$(jq '[.[].stats.code] | add' stats.json)' | '$(jq '[.[].stats.comments] | add' stats.json)' | '$(jq '[.[].stats.blanks] | add' stats.json)' |' >> STATS.md
+          echo "| **Total** | $(jq '[.[].stats.files] | add' stats.json) | $(jq '[.[].stats.lines] | add' stats.json) | $(jq '[.[].stats.code] | add' stats.json) | $(jq '[.[].stats.comments] | add' stats.json) | $(jq '[.[].stats.blanks] | add' stats.json) |" >> STATS.md
 
       - name: Inject table into README
         run: |
