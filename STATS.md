@@ -2,4 +2,7 @@
 
 | Langage | Fichiers | Lignes | Code | Commentaires | Blanks |
 |---------|----------|--------|------|--------------|--------|
-| **Total** |  |  |  |  |  |
+| null | null | null | null | null | null |
+| null | null | null | null | null | null |
+| null | null | null | null | null | null |
+| **Total** | null | null | null | null | null |
