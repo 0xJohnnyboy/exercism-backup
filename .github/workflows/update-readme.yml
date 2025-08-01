@@ -34,10 +34,12 @@ jobs:
           jq -r '
             .[]
             | select(.language != "Total")
+            | select(.stats != null)
+            | select(.stats.files != null and .stats.lines != null and .stats.code != null and .stats.comments != null and .stats.blanks != null)
             | "| \(.language) | \(.stats.files) | \(.stats.lines) | \(.stats.code) | \(.stats.comments) | \(.stats.blanks) |"
           ' stats.json >> STATS.md
 
-          echo "| **Total** | $(jq '[.[].stats.files] | add' stats.json) | $(jq '[.[].stats.lines] | add' stats.json) | $(jq '[.[].stats.code] | add' stats.json) | $(jq '[.[].stats.comments] | add' stats.json) | $(jq '[.[].stats.blanks] | add' stats.json) |" >> STATS.md
+          echo "| **Total** | $(jq '[.[].stats.files // 0] | add' stats.json) | $(jq '[.[].stats.lines // 0] | add' stats.json) | $(jq '[.[].stats.code // 0] | add' stats.json) | $(jq '[.[].stats.comments // 0] | add' stats.json) | $(jq '[.[].stats.blanks // 0] | add' stats.json) |" >> STATS.md
 
       - name: Inject table into README
         run: |
@@ -46,6 +48,10 @@ jobs:
                !found' README.md > README.tmp
           mv README.tmp README.md
 
+      - name: Clean temporary files
+        run: |
+          rm -f STATS.md stats.json
+          
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
