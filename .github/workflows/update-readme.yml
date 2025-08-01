@@ -1,4 +1,4 @@
-name: Update README with tokei stats
+name: Update README with Tokei stats
 
 on:
   push:
@@ -12,24 +12,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install tokei
-        run: |
-          curl -LO https://github.com/XAMPPRocky/tokei/releases/download/v12.1.2/tokei-12.1.2-x86_64-unknown-linux-gnu.tar.gz
-          tar -xzf tokei-12.1.2-x86_64-unknown-linux-gnu.tar.gz
-          sudo mv tokei /usr/local/bin/tokei
+      - name: Generate stats with Tokei
+        id: tokei
+        uses: XAMPPRocky/tokei-action@v1
+        with:
+          args: -o markdown solutions
 
-      - name: Generate stats
+      - name: Write stats to STATS.md
         run: |
-          echo '## 📊 Stats' > STATS.md
-          echo >> STATS.md
-          tokei solutions/ >> STATS.md
+          echo "${{ steps.tokei.outputs.output }}" > STATS.md
 
-      - name: Update README
+      - name: Inject stats into README
         run: |
-          awk '/<!--STATS_START-->/{print; system("cat STATS.md"); found=1; next} /<!--STATS_END-->/{found=0} !found' README.md > README.tmp
+          awk '/<!--STATS_START-->/{print; system("cat STATS.md"); found=1; next}
+               /<!--STATS_END-->/{found=0}
+               !found' README.md > README.tmp
           mv README.tmp README.md
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(readme): update stats"
+          commit_message: "chore(readme): update tokei stats"
