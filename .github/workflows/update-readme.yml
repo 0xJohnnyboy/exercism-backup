@@ -20,13 +20,23 @@ jobs:
           chmod +x tokei
           sudo mv tokei /usr/local/bin/
 
-      - name: Generate stats
+      - name: Generate stats in JSON
         run: |
-          echo '## 📊 Stats' > STATS.md
-          echo >> STATS.md
-          tokei solutions/ >> STATS.md
+          tokei solutions/ -o json > stats.json
 
-      - name: Inject stats into README
+      - name: Format stats as Markdown table
+        run: |
+          echo '## 📊 Exercism code stats' > STATS.md
+          echo >> STATS.md
+          echo '| Langage | Fichiers | Lignes | Code | Commentaires | Blanks |' >> STATS.md
+          echo '|---------|----------|--------|------|--------------|--------|' >> STATS.md
+
+          jq -r 'to_entries[] | select(.key != "Total") |
+            "| \(.key) | \(.value.reports | map(.stats.files) | add) | \(.value.reports | map(.stats.lines) | add) | \(.value.reports | map(.stats.code) | add) | \(.value.reports | map(.stats.comments) | add) | \(.value.reports | map(.stats.blanks) | add) |"' stats.json >> STATS.md
+
+          echo '| **Total** | '$(jq '[.[][] | .stats.files] | add' stats.json)' | '$(jq '[.[][] | .stats.lines] | add' stats.json)' | '$(jq '[.[][] | .stats.code] | add' stats.json)' | '$(jq '[.[][] | .stats.comments] | add' stats.json)' | '$(jq '[.[][] | .stats.blanks] | add' stats.json)' |' >> STATS.md
+
+      - name: Inject table into README
         run: |
           awk '/<!--STATS_START-->/{print; system("cat STATS.md"); found=1; next}
                /<!--STATS_END-->/{found=0}
@@ -36,4 +46,4 @@ jobs:
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(readme): update stats"
+          commit_message: "chore(readme): update pretty stats"
