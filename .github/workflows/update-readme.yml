@@ -23,7 +23,10 @@ jobs:
       - name: Generate stats in JSON
         run: |
           tokei solutions/ -o json > stats.json
-
+          
+      - name: Show raw stats.json content
+        run: cat stats.json
+  
       - name: Format stats as Markdown table
         run: |
           echo '## 📊 Exercism code stats' > STATS.md
