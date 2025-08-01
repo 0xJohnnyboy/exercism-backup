@@ -38,14 +38,24 @@ jobs:
             to_entries[]
             | select(.key != "Total")
             | .key as $lang
-            | .value.stats as $s
-            | "| \($lang) | \($s.files) | \($s.lines) | \($s.code) | \($s.comments) | \($s.blanks) |"
+            | .value as $val
+            | {
+                lang: $lang,
+                files: ($val.reports | length),
+                code: $val.code,
+                comments: $val.comments,
+                blanks: $val.blanks,
+                lines: ($val.code + $val.comments + $val.blanks)
+              }
+            | "| \(.lang) | \(.files) | \(.lines) | \(.code) | \(.comments) | \(.blanks) |"
           ' stats.json >> STATS.md
 
-          jq -r '
-            .Total.stats
-            | "| **Total** | \(.files) | \(.lines) | \(.code) | \(.comments) | \(.blanks) |"
-          ' stats.json >> STATS.md
+          echo "| **Total** | \
+          $(jq '[.[] | .reports | length] | add' stats.json) | \
+          $(jq '[.[] | (.code + .comments + .blanks)] | add' stats.json) | \
+          $(jq '[.[] | .code] | add' stats.json) | \
+          $(jq '[.[] | .comments] | add' stats.json) | \
+          $(jq '[.[] | .blanks] | add' stats.json) |" >> STATS.md
 
       - name: Inject table into README
         run: |
