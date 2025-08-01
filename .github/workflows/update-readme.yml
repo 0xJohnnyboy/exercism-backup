@@ -31,10 +31,24 @@ jobs:
           echo '| Langage | Fichiers | Lignes | Code | Commentaires | Blanks |' >> STATS.md
           echo '|---------|----------|--------|------|--------------|--------|' >> STATS.md
 
-          jq -r 'to_entries[] | select(.key != "Total") |
-            "| \(.key) | \(.value.reports | map(.stats.files) | add) | \(.value.reports | map(.stats.lines) | add) | \(.value.reports | map(.stats.code) | add) | \(.value.reports | map(.stats.comments) | add) | \(.value.reports | map(.stats.blanks) | add) |"' stats.json >> STATS.md
+          jq -r '
+            to_entries[] |
+            select(.key != "Total") |
+            .key as $lang |
+            .value.reports
+            | map(select(.stats != null)) as $validReports
+            | {
+                lang: $lang,
+                files: ($validReports | map(.stats.files) | add),
+                lines: ($validReports | map(.stats.lines) | add),
+                code: ($validReports | map(.stats.code) | add),
+                comments: ($validReports | map(.stats.comments) | add),
+                blanks: ($validReports | map(.stats.blanks) | add)
+              }
+            | "| \(.lang) | \(.files) | \(.lines) | \(.code) | \(.comments) | \(.blanks) |"
+          ' stats.json >> STATS.md
 
-          echo '| **Total** | '$(jq '[.[][] | .stats.files] | add' stats.json)' | '$(jq '[.[][] | .stats.lines] | add' stats.json)' | '$(jq '[.[][] | .stats.code] | add' stats.json)' | '$(jq '[.[][] | .stats.comments] | add' stats.json)' | '$(jq '[.[][] | .stats.blanks] | add' stats.json)' |' >> STATS.md
+          echo '| **Total** | '$(jq '[.[][] | select(.stats != null) | .stats.files] | add' stats.json)' | '$(jq '[.[][] | select(.stats != null) | .stats.lines] | add' stats.json)' | '$(jq '[.[][] | select(.stats != null) | .stats.code] | add' stats.json)' | '$(jq '[.[][] | select(.stats != null) | .stats.comments] | add' stats.json)' | '$(jq '[.[][] | select(.stats != null) | .stats.blanks] | add' stats.json)' |' >> STATS.md
 
       - name: Inject table into README
         run: |
