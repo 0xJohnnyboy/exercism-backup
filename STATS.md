@@ -1,7 +1,3 @@
-# Exercism backup
-This repo contains backups synced with Exercism's Github Syncer. This shows my global Exercism progression.
-
-<!--STATS_START-->
 ## 📊 Stats
 
 ===============================================================================
@@ -12,4 +8,3 @@ This repo contains backups synced with Exercism's Github Syncer. This shows my g
 ===============================================================================
  Total                 100         4247         3387          289          571
 ===============================================================================
-<!--STATS_END-->
